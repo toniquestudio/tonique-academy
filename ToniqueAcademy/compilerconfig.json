@@ -1,0 +1,14 @@
+﻿[
+  {
+    "outputFile": "Content/_bootswatch.css",
+    "inputFile": "Content/_bootswatch.scss"
+  },
+  {
+    "outputFile": "Content/_variables.css",
+    "inputFile": "Content/_variables.scss"
+  },
+  {
+    "outputFile": "Content/build.css",
+    "inputFile": "Content/build.scss"
+  }
+]
