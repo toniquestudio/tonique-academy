@@ -1,7 +1,8 @@
+using ContosoUniversity.Data;
+using ContosoUniversity.Domain;
+
 namespace ContosoUniversity.Migrations
 {
-    using ContosoUniversity.Models;
-    using ContosoUniversity.DAL;
     using System;
     using System.Collections.Generic;
     using System.Data.Entity;
