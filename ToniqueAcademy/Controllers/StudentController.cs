@@ -63,8 +63,7 @@ namespace ToniqueAcademy.Controllers
             int pageNumber = (page ?? 1);
             return View(students.ToPagedList(pageNumber, pageSize));
         }
-
-
+        
         // GET: Student/Details/5
         public ActionResult Details(int? id)
         {
@@ -109,8 +108,7 @@ namespace ToniqueAcademy.Controllers
             }
             return View(student);
         }
-
-
+        
         // GET: Student/Edit/5
         public ActionResult Edit(int? id)
         {
@@ -192,14 +190,6 @@ namespace ToniqueAcademy.Controllers
                 return RedirectToAction("Delete", new { id = id, saveChangesError = true });
             }
             return RedirectToAction("Index");
-        }
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

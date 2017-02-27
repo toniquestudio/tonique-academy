@@ -213,8 +213,6 @@ namespace ToniqueAcademy.Controllers
             }
         }
 
-
-
         // GET: Instructor/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -253,14 +251,6 @@ namespace ToniqueAcademy.Controllers
 
             _db.SaveChanges();
             return RedirectToAction("Index");
-        }
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

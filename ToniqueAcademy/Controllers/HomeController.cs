@@ -8,7 +8,12 @@ namespace ToniqueAcademy.Controllers
 {
     public class HomeController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext _db;
+
+        public HomeController(SchoolContext db)
+        {
+            _db = db;
+        }
 
         public ActionResult Index()
         {
@@ -31,21 +36,16 @@ namespace ToniqueAcademy.Controllers
                 + "FROM Person "
                 + "WHERE Discriminator = 'Student' "
                 + "GROUP BY EnrollmentDate";
-            IEnumerable<EnrollmentDateGroup> data = db.Database.SqlQuery<EnrollmentDateGroup>(query);
+            IEnumerable<EnrollmentDateGroup> data = _db.Database.SqlQuery<EnrollmentDateGroup>(query);
 
             return View(data.ToList());
         }
+
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
 
             return View();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            db.Dispose();
-            base.Dispose(disposing);
         }
     }
 }
