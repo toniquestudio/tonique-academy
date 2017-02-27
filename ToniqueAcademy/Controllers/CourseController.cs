@@ -10,16 +10,21 @@ namespace ToniqueAcademy.Controllers
 {
     public class CourseController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext _db;
+
+        public CourseController(SchoolContext db)
+        {
+            _db = db;
+        }
 
         // GET: Course
         public ActionResult Index(int? SelectedDepartment)
         {
-            var departments = db.Departments.OrderBy(q => q.Name).ToList();
+            var departments = _db.Departments.OrderBy(q => q.Name).ToList();
             ViewBag.SelectedDepartment = new SelectList(departments, "DepartmentID", "Name", SelectedDepartment);
             int departmentID = SelectedDepartment.GetValueOrDefault();
 
-            IQueryable<Course> courses = db.Courses
+            IQueryable<Course> courses = _db.Courses
                 .Where(c => !SelectedDepartment.HasValue || c.DepartmentID == departmentID)
                 .OrderBy(d => d.CourseID)
                 .Include(d => d.Department);
@@ -34,7 +39,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = db.Courses.Find(id);
+            Course course = _db.Courses.Find(id);
             if (course == null)
             {
                 return HttpNotFound();
@@ -57,8 +62,8 @@ namespace ToniqueAcademy.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    db.Courses.Add(course);
-                    db.SaveChanges();
+                    _db.Courses.Add(course);
+                    _db.SaveChanges();
                     return RedirectToAction("Index");
                 }
             }
@@ -77,7 +82,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = db.Courses.Find(id);
+            Course course = _db.Courses.Find(id);
             if (course == null)
             {
                 return HttpNotFound();
@@ -94,13 +99,13 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var courseToUpdate = db.Courses.Find(id);
+            var courseToUpdate = _db.Courses.Find(id);
             if (TryUpdateModel(courseToUpdate, "",
                new string[] { "Title", "Credits", "DepartmentID" }))
             {
                 try
                 {
-                    db.SaveChanges();
+                    _db.SaveChanges();
 
                     return RedirectToAction("Index");
                 }
@@ -116,7 +121,7 @@ namespace ToniqueAcademy.Controllers
 
         private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
         {
-            var departmentsQuery = from d in db.Departments
+            var departmentsQuery = from d in _db.Departments
                                    orderby d.Name
                                    select d;
             ViewBag.DepartmentID = new SelectList(departmentsQuery, "DepartmentID", "Name", selectedDepartment);
@@ -130,7 +135,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = db.Courses.Find(id);
+            Course course = _db.Courses.Find(id);
             if (course == null)
             {
                 return HttpNotFound();
@@ -143,9 +148,9 @@ namespace ToniqueAcademy.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Course course = db.Courses.Find(id);
-            db.Courses.Remove(course);
-            db.SaveChanges();
+            Course course = _db.Courses.Find(id);
+            _db.Courses.Remove(course);
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
 
@@ -159,7 +164,7 @@ namespace ToniqueAcademy.Controllers
         {
             if (multiplier != null)
             {
-                ViewBag.RowsAffected = db.Database.ExecuteSqlCommand("UPDATE Course SET Credits = Credits * {0}", multiplier);
+                ViewBag.RowsAffected = _db.Database.ExecuteSqlCommand("UPDATE Course SET Credits = Credits * {0}", multiplier);
             }
             return View();
         }
@@ -168,7 +173,7 @@ namespace ToniqueAcademy.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -13,14 +13,19 @@ namespace ToniqueAcademy.Controllers
 {
     public class InstructorController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext _db;
+
+        public InstructorController(SchoolContext db)
+        {
+            _db = db;
+        }
 
         // GET: Instructor
         public ActionResult Index(int? id, int? courseID)
         {
             var viewModel = new InstructorIndexData();
 
-            viewModel.Instructors = db.Instructors
+            viewModel.Instructors = _db.Instructors
                 .Include(i => i.OfficeAssignment)
                 .Include(i => i.Courses.Select(c => c.Department))
                 .OrderBy(i => i.LastName);
@@ -40,10 +45,10 @@ namespace ToniqueAcademy.Controllers
                 //    x => x.CourseID == courseID).Single().Enrollments;
                 // Explicit loading
                 var selectedCourse = viewModel.Courses.Where(x => x.CourseID == courseID).Single();
-                db.Entry(selectedCourse).Collection(x => x.Enrollments).Load();
+                _db.Entry(selectedCourse).Collection(x => x.Enrollments).Load();
                 foreach (Enrollment enrollment in selectedCourse.Enrollments)
                 {
-                    db.Entry(enrollment).Reference(x => x.Student).Load();
+                    _db.Entry(enrollment).Reference(x => x.Student).Load();
                 }
 
                 viewModel.Enrollments = selectedCourse.Enrollments;
@@ -60,7 +65,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Instructor instructor = db.Instructors.Find(id);
+            Instructor instructor = _db.Instructors.Find(id);
             if (instructor == null)
             {
                 return HttpNotFound();
@@ -85,14 +90,14 @@ namespace ToniqueAcademy.Controllers
                 instructor.Courses = new List<Course>();
                 foreach (var course in selectedCourses)
                 {
-                    var courseToAdd = db.Courses.Find(int.Parse(course));
+                    var courseToAdd = _db.Courses.Find(int.Parse(course));
                     instructor.Courses.Add(courseToAdd);
                 }
             }
             if (ModelState.IsValid)
             {
-                db.Instructors.Add(instructor);
-                db.SaveChanges();
+                _db.Instructors.Add(instructor);
+                _db.SaveChanges();
                 return RedirectToAction("Index");
             }
             PopulateAssignedCourseData(instructor);
@@ -107,7 +112,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Instructor instructor = db.Instructors
+            Instructor instructor = _db.Instructors
                 .Include(i => i.OfficeAssignment)
                 .Include(i => i.Courses)
                 .Where(i => i.ID == id)
@@ -122,7 +127,7 @@ namespace ToniqueAcademy.Controllers
 
         private void PopulateAssignedCourseData(Instructor instructor)
         {
-            var allCourses = db.Courses;
+            var allCourses = _db.Courses;
             var instructorCourses = new HashSet<int>(instructor.Courses.Select(c => c.CourseID));
             var viewModel = new List<AssignedCourseData>();
             foreach (var course in allCourses)
@@ -147,7 +152,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var instructorToUpdate = db.Instructors
+            var instructorToUpdate = _db.Instructors
                .Include(i => i.OfficeAssignment)
                .Include(i => i.Courses)
                .Where(i => i.ID == id)
@@ -165,7 +170,7 @@ namespace ToniqueAcademy.Controllers
 
                     UpdateInstructorCourses(selectedCourses, instructorToUpdate);
 
-                    db.SaveChanges();
+                    _db.SaveChanges();
 
                     return RedirectToAction("Index");
                 }
@@ -189,7 +194,7 @@ namespace ToniqueAcademy.Controllers
             var selectedCoursesHS = new HashSet<string>(selectedCourses);
             var instructorCourses = new HashSet<int>
                 (instructorToUpdate.Courses.Select(c => c.CourseID));
-            foreach (var course in db.Courses)
+            foreach (var course in _db.Courses)
             {
                 if (selectedCoursesHS.Contains(course.CourseID.ToString()))
                 {
@@ -217,7 +222,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Instructor instructor = db.Instructors.Find(id);
+            Instructor instructor = _db.Instructors.Find(id);
             if (instructor == null)
             {
                 return HttpNotFound();
@@ -230,15 +235,15 @@ namespace ToniqueAcademy.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Instructor instructor = db.Instructors
+            Instructor instructor = _db.Instructors
               .Include(i => i.OfficeAssignment)
               .Where(i => i.ID == id)
               .Single();
 
             instructor.OfficeAssignment = null;
-            db.Instructors.Remove(instructor);
+            _db.Instructors.Remove(instructor);
 
-            var department = db.Departments
+            var department = _db.Departments
                 .Where(d => d.InstructorID == id)
                 .SingleOrDefault();
             if (department != null)
@@ -246,14 +251,14 @@ namespace ToniqueAcademy.Controllers
                 department.InstructorID = null;
             }
 
-            db.SaveChanges();
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

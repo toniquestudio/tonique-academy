@@ -11,7 +11,12 @@ namespace ToniqueAcademy.Controllers
 {
     public class StudentController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext _db;
+
+        public StudentController(SchoolContext db)
+        {
+            _db = db;
+        }
 
         // GET: Student
         public ViewResult Index(string sortOrder, string currentFilter, string searchString, int? page)
@@ -31,7 +36,7 @@ namespace ToniqueAcademy.Controllers
 
             ViewBag.CurrentFilter = searchString;
 
-            var students = from s in db.Students
+            var students = from s in _db.Students
                            select s;
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -67,7 +72,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.Students.Find(id);
+            Student student = _db.Students.Find(id);
             if (student == null)
             {
                 return HttpNotFound();
@@ -92,8 +97,8 @@ namespace ToniqueAcademy.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    db.Students.Add(student);
-                    db.SaveChanges();
+                    _db.Students.Add(student);
+                    _db.SaveChanges();
                     return RedirectToAction("Index");
                 }
             }
@@ -113,7 +118,7 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.Students.Find(id);
+            Student student = _db.Students.Find(id);
             if (student == null)
             {
                 return HttpNotFound();
@@ -132,13 +137,13 @@ namespace ToniqueAcademy.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var studentToUpdate = db.Students.Find(id);
+            var studentToUpdate = _db.Students.Find(id);
             if (TryUpdateModel(studentToUpdate, "",
                new string[] { "LastName", "FirstMidName", "EnrollmentDate" }))
             {
                 try
                 {
-                    db.SaveChanges();
+                    _db.SaveChanges();
 
                     return RedirectToAction("Index");
                 }
@@ -162,7 +167,7 @@ namespace ToniqueAcademy.Controllers
             {
                 ViewBag.ErrorMessage = "Delete failed. Try again, and if the problem persists see your system administrator.";
             }
-            Student student = db.Students.Find(id);
+            Student student = _db.Students.Find(id);
             if (student == null)
             {
                 return HttpNotFound();
@@ -177,9 +182,9 @@ namespace ToniqueAcademy.Controllers
         {
             try
             {
-                Student student = db.Students.Find(id);
-                db.Students.Remove(student);
-                db.SaveChanges();
+                Student student = _db.Students.Find(id);
+                _db.Students.Remove(student);
+                _db.SaveChanges();
             }
             catch (RetryLimitExceededException/* dex */)
             {
@@ -192,7 +197,7 @@ namespace ToniqueAcademy.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }
